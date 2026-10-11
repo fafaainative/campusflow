@@ -1,7 +1,7 @@
 
 import unittest
 
-from tickets import (
+from campusflow.tickets import (
     calculate_priority,
     validate_ticket_data,
     generate_ticket_id,
