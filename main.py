@@ -1,4 +1,7 @@
+
 """CampusFlow command-line helpdesk application."""
+
+from getpass import getpass
 
 from campusflow.tickets import create_ticket, find_ticket
 from workflow import assign_ticket, update_ticket_status, reopen_ticket
@@ -7,6 +10,30 @@ from reports import generate_report
 from storage import load_tickets, save_tickets
 from campusflow.auth import authenticate
 
+print("\n" + "═" * 60)
+print("👋 Welcome to CampusFlow!")
+# ─────────────────── 🔐 LOGIN ───────────────────
+
+def login_user():
+    """Authenticate a user before allowing access."""
+
+    print("\n" + "═" * 45)
+    print("🔐 LOGIN TO PROCEED".center(45))
+    print("═" * 45)
+
+    username = input("👤 Username: ").strip()
+    password = getpass("🔑 Password: ")
+
+    user = authenticate(username, password)
+
+    if user is None:
+        print("❌ Invalid username or password.")
+        return None
+
+    print(f"\n✅ Welcome, {user['name']}!")
+    print(f"👤 Role: {user['role']}")
+
+    return user
 
 
 # ─────────────────── 🎫 TICKET DISPLAY ───────────────────
@@ -68,7 +95,6 @@ def create_new_ticket(tickets):
 
     title = input("📌 Ticket title: ")
 
-    # 📁 Category selection
     print("\n📁 SELECT CATEGORY")
     print("─" * 30)
     print("  1. 🌐 Network")
@@ -91,7 +117,6 @@ def create_new_ticket(tickets):
 
     category = categories[category_choice]
 
-    # 🚨 Urgency selection
     print("\n🚨 SELECT URGENCY")
     print("─" * 30)
     print("  1. 🟢 Low")
@@ -112,7 +137,6 @@ def create_new_ticket(tickets):
 
     urgency = urgencies[urgency_choice]
 
-    # 👥 Validate affected users
     affected_users_input = input(
         "\n👥 Number of affected users: "
     ).strip()
@@ -123,7 +147,6 @@ def create_new_ticket(tickets):
         print("❌ Error: affected users must be a whole number.")
         return
 
-    # 🎫 Create the ticket using your existing function
     ticket, error = create_ticket(
         title=title,
         category=category,
@@ -139,6 +162,7 @@ def create_new_ticket(tickets):
     print(f"\n✅ Ticket {ticket['id']} created successfully!")
     display_ticket(ticket)
     save_changes(tickets)
+
 
 # ─────────────────── 🔍 SEARCH TICKET ───────────────────
 
@@ -199,6 +223,7 @@ def assign_existing_ticket(tickets):
     if success:
         save_changes(tickets)
 
+
 # ─────────────────── 🔄 UPDATE STATUS ───────────────────
 
 def change_ticket_status(tickets):
@@ -209,7 +234,6 @@ def change_ticket_status(tickets):
 
     ticket_id = input("🆔 Enter ticket ID: ").strip()
 
-    # 🔄 Status selection menu
     print("\n📋 SELECT NEW STATUS")
     print("─" * 30)
     print("  1. ⚙️ In Progress")
@@ -228,16 +252,15 @@ def change_ticket_status(tickets):
 
     new_status = statuses[status_choice]
 
-    # 🔄 Apply existing workflow rules
     success, message = update_ticket_status(
         tickets, ticket_id, new_status
     )
 
     print(("✅ " if success else "❌ ") + message)
 
-    # 💾 Save only when the update succeeds
     if success:
         save_changes(tickets)
+
 
 # ─────────────────── 🔓 REOPEN TICKET ───────────────────
 
@@ -326,7 +349,14 @@ def display_menu():
 # ─────────────────── 🚀 APPLICATION ───────────────────
 
 def main():
-    """Load saved tickets and run the menu until exit."""
+    """Authenticate the user, load tickets, and run the menu."""
+
+    user = login_user()
+
+    if user is None:
+        print("🚫 Access denied. CampusFlow is closing.")
+        return
+
     try:
         tickets = load_tickets()
     except (ValueError, OSError) as error:
@@ -334,8 +364,8 @@ def main():
         print("⚠️ Please correct the storage problem before restarting.")
         return
 
-    print("\n" + "═" * 60)
-    print("👋 Welcome to CampusFlow!")
+
+    print(f"👤 Logged in as: {user['name']}")
     print(f"📂 Loaded {len(tickets)} ticket(s).")
     print("═" * 60)
 

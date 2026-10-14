@@ -1,4 +1,5 @@
-# campusflow/auth.py
+
+"""CampusFlow user authentication."""
 
 USERS = {
     "engrA": {
@@ -15,7 +16,7 @@ USERS = {
 
 
 def authenticate(username, password):
-    """Verify a user's login details."""
+    """Return user details if the login credentials are valid."""
 
     user = USERS.get(username)
 
@@ -23,4 +24,3 @@ def authenticate(username, password):
         return user
 
     return None
-    
